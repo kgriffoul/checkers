@@ -1,6 +1,6 @@
-package game;
+package checkers.game;
 
 public enum Color {
-	WHITE,
-	BLACK
+    WHITE,
+    BLACK
 }
