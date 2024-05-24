@@ -40,7 +40,7 @@ public class Main extends Application {
             if (board.isPieceAt(x, y)) {
             	gc.drawImage(SELECT, x * 64, y * 64, 64, 64);
         		for(String pos : board.getPieceAt(x, y).getMoveList()) {
-        			
+        			gc.drawImage(SELECT, Integer.valueOf(pos.split(",")[0])*64, Integer.valueOf(pos.split(",")[1])*64);
         		}
             }
         });
