@@ -91,7 +91,7 @@ public class Piece {
         if (   Board.isPieceAt(pieces, x + 1, y - 1) // there is a piece in diagonal
             && Board.getPieceAt(pieces,x + 1, y - 1).getColor() != this.getColor() // the color is not the same
             && !Board.isPieceAt(pieces, x + 2, y - 2) // there is an empty space after the piece
-            && x + 1 <= 8 && y - 1 >= 1) // the coordinates are in the board
+            && x + 1 <= 10 && y - 1 >= 1) // the coordinates are in the board
         {
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
             System.out.println(Arrays.toString(newPieces.toArray()));
@@ -103,7 +103,7 @@ public class Piece {
         if (   Board.isPieceAt(pieces, x + 1, y + 1)
             && Board.getPieceAt(pieces, x + 1, y + 1).getColor() != this.getColor()
             && !Board.isPieceAt(pieces, x + 2, y + 2)
-            && x + 1 <= 8 && y + 1 <= 8)
+            && x + 1 <= 10 && y + 1 <= 10)
         {
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
             System.out.println(Arrays.toString(newPieces.toArray()));
@@ -127,7 +127,7 @@ public class Piece {
         if (   Board.isPieceAt(pieces, x - 1, y + 1)
             && Board.getPieceAt(pieces, x - 1, y + 1).getColor() != this.getColor()
             && !Board.isPieceAt(pieces, x - 2, y + 2)
-            && x - 1 >= 1 && y + 1 <= 8)
+            && x - 1 >= 1 && y + 1 <= 10)
         {
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
             System.out.println(Arrays.toString(newPieces.toArray()));
@@ -138,17 +138,112 @@ public class Piece {
         }
 
     }
+    
+    public HashMap getJumpListCrown() {
+        HashMap map = new HashMap<>();
+        System.out.println(Arrays.toString(board.getPieces().toArray()));
+        ArrayList<Piece> pieces = new ArrayList<>(this.board.getPieces()); // clone the original board
+        getJumpListCrown(pieces, this.getX(), this.getY(), map, null);
+        return map;
+    }
+    
+    public void getJumpListCrown(ArrayList<Piece> pieces, int x, int y, HashMap<String, HashMap> map, Direction lastDirection) {
+        // Diagonale haut-gauche
+        int i = 1;
+        while (x + i <= 10 && y - i >= 1 && !Board.isPieceAt(pieces, x + i, y - i) && lastDirection != Direction.NW) {
+            if (Board.isPieceAt(pieces, x + i, y - i) && Board.getPieceAt(pieces, x + i, y - i).getColor() != this.getColor()) {
+                int j = 1;
+                while (x + i + j <= 10 && y - i - j >= 1) {
+                    if (!Board.isPieceAt(pieces, x + i + j, y - i - j)) {
+                    	ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+                    	Board.removePieceAt(newPieces, x + i, y - i);
+                        HashMap<String, HashMap> pos = new HashMap<>();
+                        map.put(positionToString(x + i + j, y - i - j), pos);
+                        getJumpListCrown(pieces, x + i + j, y - i - j, pos, Direction.NW);
+                    } else {
+                        break;
+                    }
+                    j++;
+                }
+            }
+            i++;
+        }
+
+        // Diagonale haut-droite
+        i = 1;
+        while (x + i <= 10 && y + i <= 10 && !Board.isPieceAt(pieces,x + i, y + i) && lastDirection != Direction.NE) {
+            if (Board.isPieceAt(pieces,x + i, y + i) && Board.getPieceAt(pieces,x + i, y + i).getColor() != this.getColor()) {
+                int j = 1;
+                while (x + i + j <= 10 && y + i + j <= 10) {
+                    if (!Board.isPieceAt(pieces,x + i + j, y + i + j)) {
+                    	ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+                    	Board.removePieceAt(newPieces, x + i, y + i);
+                        HashMap<String, HashMap> pos = new HashMap<>();
+                        map.put(positionToString(x + i + j, y + i + j), pos);
+                        getJumpListCrown(pieces,x + i + j, y + i + j, pos, Direction.NE);
+                    } else {
+                        break;
+                    }
+                    j++;
+                }
+            }
+            i++;
+        }
+
+        // Diagonale bas-gauche
+        i = 1;
+        while (x - i >= 1 && y - i >= 1 && !Board.isPieceAt(pieces, x - i, y - i)) {
+            if (Board.isPieceAt(pieces, x - i, y - i) && Board.getPieceAt(pieces, x - i, y - i).getColor() != this.getColor() && lastDirection != Direction.SW) {
+                int j = 1;
+                while (x - i - j >= 1 && y - i - j >= 1) {
+                    if (!board.isPieceAt(x - i - j, y - i - j)) {
+                    	ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+                    	Board.removePieceAt(newPieces, x - i, y - i);
+                        HashMap<String, HashMap> pos = new HashMap<>();
+                        map.put(positionToString(x - i - j, y - i - j), pos);
+                        getJumpListCrown(pieces, x - i - j, y - i - j, pos, Direction.SW);
+                    } else {
+                        break;
+                    }
+                    j++;
+                }
+            }
+            i++;
+        }
+
+        // Diagonale bas-droite
+        i = 1;
+        while (x - i >= 1 && y + i <= 10 && Board.isPieceAt(pieces, x - i, y + i)) {
+            if (Board.isPieceAt(pieces, x - i, y + i) && Board.getPieceAt(pieces, x - i, y + i).getColor() != this.getColor() && lastDirection != Direction.SE) {
+                int j = 1;
+                while (x - i - j >= 1 && y + i + j <= 10) {
+                    if (!Board.isPieceAt(pieces, x - i - j, y + i + j)) {
+                    	ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+                    	Board.removePieceAt(newPieces, x - i, y + i);
+                        HashMap<String, HashMap> pos = new HashMap<>();
+                        map.put(positionToString(x - i - j, y + i + j), pos);
+                        getJumpListCrown(pieces, x - i - j, y + i + j, pos, Direction.SE);
+                    } else {
+                        break;
+                    }
+                    j++;
+                }
+            }
+            i++;
+        }
+    }
+
 
     public boolean canEat() {
 
         return     board.isPieceAt(x + 1, y - 1) // there is a piece in diagonal
                 && board.getPieceAt(x + 1, y - 1).getColor() != this.getColor() // the color is not the same
                 && !board.isPieceAt(x + 2, y - 2) // there is an empty space after the piece
-                && x + 1 <= 8 && y - 1 >= 1 // the coordinates are in the board
+                && x + 1 <= 10 && y - 1 >= 1 // the coordinates are in the board
                 || board.isPieceAt(x + 1, y + 1)
                 && board.getPieceAt(x + 1, y + 1).getColor() != this.getColor()
                 && !board.isPieceAt(x + 2, y + 2)
-                && x + 1 <= 8 && y + 1 <= 8
+                && x + 1 <= 10 && y + 1 <= 10
                 || board.isPieceAt(x - 1, y - 1)
                 && board.getPieceAt(x - 1, y - 1).getColor() != this.getColor()
                 && !board.isPieceAt(x - 2, y - 2)
@@ -156,7 +251,7 @@ public class Piece {
                 || board.isPieceAt(x - 1, y + 1)
                 && board.getPieceAt(x - 1, y + 1).getColor() != this.getColor()
                 && !board.isPieceAt(x - 2, y + 2)
-                && x - 1 >= 1 && y + 1 <= 8;
+                && x - 1 >= 1 && y + 1 <= 10;
     }
 
     private static String positionToString(int x, int y) {
