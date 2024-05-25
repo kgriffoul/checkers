@@ -57,6 +57,14 @@ public class Piece {
         this.crown = crown;
     }
 
+    public List<List<String>> getMove() {
+        if (isCrown()) {
+            return getMoveListCrown();
+        } else {
+            return getMoveList();
+        }
+    }
+
     public List<List<String>> getMoveList() {
         List<List<String>> list = new ArrayList<>();
         int newY;
@@ -79,6 +87,39 @@ public class Piece {
         }
 
         return list;
+    }
+
+    public List<List<String>> getMoveListCrown() {
+        List<List<String>> list = new ArrayList<>();
+
+        for (int i = -1; i <= 1; i += 2) {
+            for (int j = -1; j <= 1; j += 2) {
+                int newX = x + i;
+                int newY = y + j;
+                while (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                    if (!board.isPieceAt(newX, newY)) {
+                        List templist = new ArrayList<>();
+                        templist.add(positionToString(newX, newY));
+                        list.add(templist);
+                    } else {
+                        break;
+                    }
+                    newX += i;
+                    newY += j;
+                }
+            }
+        }
+
+
+        return list;
+    }
+
+    public HashMap getJump() {
+        if (isCrown()) {
+            return getJumpListCrown();
+        } else {
+            return getJumpList();
+        }
     }
 
     public HashMap getJumpList() {
@@ -146,98 +187,112 @@ public class Piece {
         HashMap map = new HashMap<>();
 //        System.out.println(Arrays.toString(board.getPieces().toArray()));
         ArrayList<Piece> pieces = new ArrayList<>(this.board.getPieces()); // clone the original board
-        getJumpListCrown(pieces, this.getX(), this.getY(), map, null);
+        getJumpListCrown(pieces, this.getX(), this.getY(), map);
+//        System.out.println("Map: " + map);
         return map;
     }
 
-    public void getJumpListCrown(ArrayList<Piece> pieces, int x, int y, HashMap<String, HashMap> map, Direction lastDirection) {
-        // Diagonale haut-gauche
-        int i = 1;
-        while (x + i < 10 && y - i >= 1 && !Board.isPieceAt(pieces, x + i, y - i) && lastDirection != Direction.NW) {
-            if (Board.isPieceAt(pieces, x + i, y - i) && Board.getPieceAt(pieces, x + i, y - i).getColor() != this.getColor()) {
-                int j = 1;
-                while (x + i + j < 10 && y - i - j >= 1) {
-                    if (!Board.isPieceAt(pieces, x + i + j, y - i - j)) {
-                        ArrayList<Piece> newPieces = new ArrayList<>(pieces);
-                        Board.removePieceAt(newPieces, x + i, y - i);
-                        HashMap<String, HashMap> pos = new HashMap<>();
-                        map.put(positionToString(x + i + j, y - i - j), pos);
-                        getJumpListCrown(pieces, x + i + j, y - i - j, pos, Direction.NW);
-                    } else {
-                        break;
-                    }
-                    j++;
-                }
-            }
+    private void getJumpListCrown(ArrayList<Piece> pieces, int x, int y, HashMap map) {
+        int i;
+
+        i = 1;
+        while (!Board.isPieceAt(pieces, x + i, y - i) && x + i < 10 && y - i >= 0) {
             i++;
         }
+        if (   x + i + 1 < 10 && y - i - 1 >= 0     // on est toujours dans le plateau, même après le saut
+            && Board.getPieceAt(pieces, x+i, y-i).getColor() != this.getColor()
+            && !Board.isPieceAt(pieces, x+i+1, y-i-1)    // il n'y a pas de pièce après
+        ) {
 
-        // Diagonale haut-droite
-        i = 1;
-        while (x + i < 10 && y + i < 10 && !Board.isPieceAt(pieces,x + i, y + i) && lastDirection != Direction.NE) {
-            if (Board.isPieceAt(pieces,x + i, y + i) && Board.getPieceAt(pieces,x + i, y + i).getColor() != this.getColor()) {
-                int j = 1;
-                while (x + i + j < 10 && y + i + j < 10) {
-                    if (!Board.isPieceAt(pieces,x + i + j, y + i + j)) {
-                        ArrayList<Piece> newPieces = new ArrayList<>(pieces);
-                        Board.removePieceAt(newPieces, x + i, y + i);
-                        HashMap<String, HashMap> pos = new HashMap<>();
-                        map.put(positionToString(x + i + j, y + i + j), pos);
-                        getJumpListCrown(pieces,x + i + j, y + i + j, pos, Direction.NE);
-                    } else {
-                        break;
-                    }
-                    j++;
-                }
+            ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+            Board.removePieceAt(newPieces, x + i, y - i);
+
+            int j = 1;
+            while (x + i + j < 10 && y - i - j >= 0 && !Board.isPieceAt(pieces, x + i + j, y - i - j)) {
+
+                HashMap<String, HashMap> pos = new HashMap<>();
+                map.put(positionToString(x + i + j, y - i - j), pos);
+                getJumpListCrown(newPieces, x + i + j, y - i - j, pos);
+                j++;
+
             }
-            i++;
         }
 
-        // Diagonale bas-gauche
+
         i = 1;
-        while (x - i >= 1 && y - i >= 1 && !Board.isPieceAt(pieces, x - i, y - i)) {
-            if (Board.isPieceAt(pieces, x - i, y - i) && Board.getPieceAt(pieces, x - i, y - i).getColor() != this.getColor() && lastDirection != Direction.SW) {
-                int j = 1;
-                while (x - i - j >= 1 && y - i - j >= 1) {
-                    if (!board.isPieceAt(x - i - j, y - i - j)) {
-                        ArrayList<Piece> newPieces = new ArrayList<>(pieces);
-                        Board.removePieceAt(newPieces, x - i, y - i);
-                        HashMap<String, HashMap> pos = new HashMap<>();
-                        map.put(positionToString(x - i - j, y - i - j), pos);
-                        getJumpListCrown(pieces, x - i - j, y - i - j, pos, Direction.SW);
-                    } else {
-                        break;
-                    }
-                    j++;
-                }
-            }
+        while (!Board.isPieceAt(pieces, x + i, y + i) && x + i < 10 && y + i < 10) {
             i++;
         }
+        if (   x + i + 1 < 10 && y + i + 1 < 10
+            && Board.getPieceAt(pieces, x+i, y+i).getColor() != this.getColor()
+            && !Board.isPieceAt(pieces, x+i+1, y+i+1)) {
 
-        // Diagonale bas-droite
-        i = 1;
-        while (x - i >= 1 && y + i < 10 && Board.isPieceAt(pieces, x - i, y + i)) {
-            if (Board.isPieceAt(pieces, x - i, y + i) && Board.getPieceAt(pieces, x - i, y + i).getColor() != this.getColor() && lastDirection != Direction.SE) {
-                int j = 1;
-                while (x - i - j >= 1 && y + i + j < 10) {
-                    if (!Board.isPieceAt(pieces, x - i - j, y + i + j)) {
-                        ArrayList<Piece> newPieces = new ArrayList<>(pieces);
-                        Board.removePieceAt(newPieces, x - i, y + i);
-                        HashMap<String, HashMap> pos = new HashMap<>();
-                        map.put(positionToString(x - i - j, y + i + j), pos);
-                        getJumpListCrown(pieces, x - i - j, y + i + j, pos, Direction.SE);
-                    } else {
-                        break;
-                    }
-                    j++;
-                }
+            ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+            Board.removePieceAt(newPieces, x + i, y + i);
+
+            int j = 1;
+            while (x + i + j < 10 && y + i + j < 10 && !Board.isPieceAt(pieces, x + i + j, y + i + j)) {
+
+                HashMap<String, HashMap> pos = new HashMap<>();
+                map.put(positionToString(x + i + j, y + i + j), pos);
+                getJumpListCrown(newPieces, x + i + j, y + i + j, pos);
+                j++;
+
             }
+        }
+
+
+        i = 1;
+        while (!Board.isPieceAt(pieces, x - i, y - i) && x - i >= 0 && y - i >= 0) {
             i++;
+        }
+        if (   x - i - 1 >= 0 && y - i - 1 >= 0
+            && Board.getPieceAt(pieces, x-i, y-i).getColor() != this.getColor()
+            && !Board.isPieceAt(pieces, x-i-1, y-i-1)) {
+
+            ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+            Board.removePieceAt(newPieces, x - i, y - i);
+
+            int j = 1;
+            while (x - i - j >= 0 && y - i - j >= 0 && !Board.isPieceAt(pieces, x - i - j, y - i - j)) {
+
+                HashMap<String, HashMap> pos = new HashMap<>();
+                map.put(positionToString(x - i - j, y - i - j), pos);
+                getJumpListCrown(newPieces, x - i - j, y - i - j, pos);
+                j++;
+
+            }
+        }
+
+
+        i = 1;
+        while (!Board.isPieceAt(pieces, x - i, y + i) && x - i >= 0 && y + i < 10) {
+            i++;
+        }
+        if (   x - i - 1 >= 0 && y + i + 1 < 10
+            && Board.getPieceAt(pieces, x-i, y+i).getColor() != this.getColor()
+            && !Board.isPieceAt(pieces, x-i-1, y+i+1)) {
+
+            ArrayList<Piece> newPieces = new ArrayList<>(pieces);
+            Board.removePieceAt(newPieces, x - i, y + i);
+
+            int j = 1;
+            while (x - i - j >= 0 && y + i + j < 10 && !Board.isPieceAt(pieces, x - i - j, y + i + j)) {
+
+                HashMap<String, HashMap> pos = new HashMap<>();
+                map.put(positionToString(x - i - j, y + i + j), pos);
+                getJumpListCrown(newPieces, x - i - j, y + i + j, pos);
+                j++;
+
+            }
         }
     }
 
 
     public boolean canEat() {
+        if (isCrown()) {
+            return canEatCrown();
+        }
 
         return     board.isPieceAt(x + 1, y - 1) // there is a piece in diagonal
                 && board.getPieceAt(x + 1, y - 1).getColor() != this.getColor() // the color is not the same
@@ -255,6 +310,29 @@ public class Piece {
                 && board.getPieceAt(x - 1, y + 1).getColor() != this.getColor()
                 && !board.isPieceAt(x - 2, y + 2)
                 && x - 2 >= 0 && y + 2 < 10;
+    }
+
+    public boolean canEatCrown() {
+        for (int i = -1; i <= 1; i += 2) {
+            for (int j = -1; j <= 1; j += 2) {
+                int newX = x + i;
+                int newY = y + j;
+                while (newX >= 0 && newX < 10 && newY >= 0 && newY < 10) {
+                    if (board.isPieceAt(newX, newY)) {
+                        if (board.getPieceAt(newX, newY).getColor() != getColor()
+                            && !board.isPieceAt(newX + i, newY + j)
+                            && newX + i >= 0 && newY + i < 10 && newY + j >= 0 && newY + j < 10) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                    newX += i;
+                    newY += j;
+                }
+            }
+        }
+        return false;
     }
 
     private static String positionToString(int x, int y) {
@@ -294,19 +372,37 @@ public class Piece {
 
     public List<List<String>> getLongestPath(List<List<String>> allPaths) {
 
-        if (allPaths.size() == 1) {
-            return allPaths;
+//        if (allPaths.size() == 1) {
+//            return allPaths;
+//        }
+//
+//        List<List<String>> longestPath = new ArrayList<>();
+//
+//        for (int i = 1; i < allPaths.size(); i++) {
+//            if (allPaths.get(i-1).size() >= allPaths.get(i).size()) {
+//                longestPath.add(allPaths.get(i-1));
+//            }
+//        }
+
+        int maxSize = 0;
+        for (List<String> list : allPaths) {
+            if (list.size() > maxSize) {
+                maxSize = list.size();
+            }
         }
 
         List<List<String>> longestPath = new ArrayList<>();
-
-        for (int i = 1; i < allPaths.size(); i++) {
-            if (allPaths.get(i-1).size() >= allPaths.get(i).size()) {
-                longestPath.add(allPaths.get(i-1));
+        for (List<String> list : allPaths) {
+            if (list.size() == maxSize) {
+                longestPath.add(list);
             }
         }
 
         return longestPath;
     }
 
+    @Override
+    public String toString() {
+        return getColor() + " " + getX() + "," + getY();
+    }
 }
