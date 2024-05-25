@@ -8,6 +8,8 @@ public class Board {
     private final HashMap<Color, Player> players;
     private Color move;
 
+    private Piece selectedPiece;
+
     public Board(Player player1, Player player2) {
 
         // default state of board
@@ -64,6 +66,43 @@ public class Board {
         return false;
     }
 
+    public Piece getSelectedPiece() {
+        return this.selectedPiece;
+    }
+
+    public void selectPiece(Piece piece) {
+        this.selectedPiece = piece;
+    }
+
+    public void move(Piece piece, List<String> list) {
+        for (String pos : Board.getDiagonalPos(
+                piece.getX(),
+                piece.getY(),
+                Integer.parseInt(list.getFirst().split(",")[0]),
+                Integer.parseInt(list.getFirst().split(",")[1]))) {
+            int newX = Integer.parseInt(pos.split(",")[0]);
+            int newY = Integer.parseInt(pos.split(",")[1]);
+            if (isPieceAt(newX, newY) &&getPieceAt(newX, newY).getColor() != piece.getColor()) {
+                removePieceAt(newX, newY);
+            }
+
+        }
+        for (int i = 1; i < list.size(); i++) {
+            int x1 = Integer.parseInt(list.get(i-1).split(",")[0]);
+            int y1 = Integer.parseInt(list.get(i-1).split(",")[1]);
+            int x2 = Integer.parseInt(list.get(i).split(",")[0]);
+            int y2 = Integer.parseInt(list.get(i).split(",")[1]);
+            for (String pos : Board.getDiagonalPos(x1, y1, x2, y2)) {
+                int newX = Integer.parseInt(pos.split(",")[0]);
+                int newY = Integer.parseInt(pos.split(",")[1]);
+                if (isPieceAt(newX, newY) && getPieceAt(newX, newY).getColor() != piece.getColor()) {
+                    removePieceAt(newX, newY);
+                }
+            }
+        }
+        piece.setPos(list.getLast());
+    }
+
     /**
      * Get the piece at coordinates x, y
      * @param x coordinate
@@ -88,6 +127,36 @@ public class Board {
             }
         }
         pieces.remove(pieceIndex);
+    }
+
+    public HashMap<Piece, List<List<String>>> getAllowedMoves(Color color) {
+        boolean eat = false;
+        /* check if at least one piece can eat */
+        for (Piece piece : getPieces()) {
+            if (piece.getColor() == color && piece.canEat()) {
+                eat = true;
+            }
+        }
+
+        HashMap<Piece, List<List<String>>> moves = new HashMap<>();
+        if (eat) {
+            for (Piece piece : getPieces()) {
+                if (piece.getColor() == color && piece.canEat()) {
+                    System.out.println("Jump list" + piece.getJumpList());
+                    System.out.println("All Paths" + piece.getAllPaths(piece.getJumpList()));
+                    System.out.println("Longest Path" + piece.getLongestPath(piece.getAllPaths(piece.getJumpList())));
+                    moves.put(piece, piece.getLongestPath(piece.getAllPaths(piece.getJumpList())));
+                }
+            }
+        } else {
+            for (Piece piece : getPieces()) {
+                if (piece.getColor() == color && !piece.getMoveList().isEmpty()) {
+                    moves.put(piece, piece.getMoveList());
+                }
+            }
+        }
+
+        return moves;
     }
 
 
@@ -126,4 +195,35 @@ public class Board {
         }
         pieces.remove(pieceIndex);
     }
+
+
+    public static List<String> getDiagonalPos(int x1, int y1, int x2, int y2) {
+        if (Math.abs(y2 - y1) == Math.abs(x2 - x1)) {
+
+            List<String> pos = new ArrayList<>();
+
+            int startX = Math.min(x1, x2);
+            int endX = Math.max(x1, x2);
+
+            if ((y2 - y1) == (x2 - x1)) {
+                // Diagonale descendante
+                int c = y1 - x1;
+                for (int x = startX; x <= endX; x++) {
+                    int y = x + c;
+                    pos.add(x + "," + y);
+                }
+            } else {
+                // Diagonale ascendante
+                int c = y1 + x1;
+                for (int x = startX; x <= endX; x++) {
+                    int y = -x + c;
+                    pos.add(x + "," + y);
+                }
+            }
+            return pos;
+        } else {
+            throw new IllegalArgumentException();
+        }
+    }
+
 }
