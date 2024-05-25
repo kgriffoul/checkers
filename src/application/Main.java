@@ -4,6 +4,10 @@ import game.Board;
 import game.Piece;
 import game.Player;
 import javafx.application.Application;
+import javafx.event.EventType;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.transform.Rotate;
 import javafx.stage.Stage;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -12,6 +16,7 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 
+import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,13 +35,18 @@ public class Main extends Application {
         Board board = new Board(new Player("a"), new Player("b"));
 
         /* temp */
-        board.getPieceAt(0, 0).setPos(3, 5);
-        board.removePieceAt(1, 7);
-        board.removePieceAt(5, 7);
-        board.removePieceAt(7, 9);
+        board.getPieceAt(0, 0).setPos(1, 5);
+        board.getPieceAt(2, 0).setPos(7, 5);
+        board.getPieceAt(7, 5).setCrown(true);
+        board.removePieceAt(3, 7);
+        board.removePieceAt(9, 7);
         /*      */
 
         drawBoard(gc, board);
+
+        /* Rotate canvas in the right form */
+        Rotate rotate = new Rotate(180, canvas.getWidth() / 2, canvas.getHeight() / 2);
+        canvas.getTransforms().add(rotate);
 
         canvas.setOnMouseClicked(event -> {
 
@@ -72,6 +82,7 @@ public class Main extends Application {
 //            }
 
             HashMap<Piece, List<List<String>>> allowedMoves = board.getAllowedMoves(board.getMove());
+            System.out.println("Coups possibles:" + allowedMoves);
 
             /* si on sélectionne une pièce */
             if (board.isPieceAt(x, y) && allowedMoves.containsKey(board.getPieceAt(x, y))) {
@@ -81,9 +92,8 @@ public class Main extends Application {
                 gc.drawImage(SELECT, x * 64, y * 64, 64, 64); // affichage sélection
 
                 /* affichage coups possibles */
-                System.out.println(allowedMoves.get(board.getSelectedPiece()));
+                System.out.println("Coups possibles pour cette pièce :" + allowedMoves.get(board.getSelectedPiece()));
                 for (List<String> list : allowedMoves.get(board.getSelectedPiece())) {
-                    System.out.println("a");
                     for (String pos : Board.getDiagonalPos(
                             board.getSelectedPiece().getX(),
                             board.getSelectedPiece().getY(),
@@ -92,7 +102,6 @@ public class Main extends Application {
                         int newX = Integer.parseInt(pos.split(",")[0]);
                         int newY = Integer.parseInt(pos.split(",")[1]);
                         if (board.isPieceAt(newX, newY) && board.getPieceAt(newX, newY).getColor() != board.getSelectedPiece().getColor()) {
-                            System.out.println(newX +","+ newY);
                             gc.drawImage(EAT, newX * 64, newY * 64, 64, 64);
                         }
 
@@ -106,7 +115,7 @@ public class Main extends Application {
                             int newX = Integer.parseInt(pos.split(",")[0]);
                             int newY = Integer.parseInt(pos.split(",")[1]);
                             if (board.isPieceAt(newX, newY) && board.getPieceAt(newX, newY).getColor() != board.getSelectedPiece().getColor()) {
-                                System.out.println(newX +","+ newY);
+                                //System.out.println(newX +","+ newY);
                                 gc.drawImage(EAT, newX * 64, newY * 64, 64, 64);
                             }
                         }
@@ -124,12 +133,22 @@ public class Main extends Application {
                         canMove = true;
                         board.move(board.getSelectedPiece(), list);
 
+                        /* check for crown */
+                        if (   board.getSelectedPiece().getColor() == game.Color.WHITE && board.getSelectedPiece().getY() == 9
+                            || board.getSelectedPiece().getColor() == game.Color.BLACK && board.getSelectedPiece().getY() == 0) {
+                            board.getSelectedPiece().setCrown(true);
+                        }
+
+                        board.selectPiece(null);
+
                         /* on réinitialise l'affichage */
                         gc.clearRect(0, 0, 640, 640);
                         drawBoard(gc, board);
 
                         /* à l'autre joueur de jouer */
                         board.switchMove();
+                        /* rotate again */
+//                        canvas.getTransforms().add(rotate);
                     }
                 }
             }
@@ -148,9 +167,17 @@ public class Main extends Application {
         gc.drawImage(BOARD, 0, 0, 640, 640);
         for (Piece piece : board.getPieces()) {
             if (piece.getColor() == game.Color.WHITE) {
-                gc.drawImage(WHITE_PIECE, piece.getX()*64, piece.getY()*64, 64, 64);
+                if (piece.isCrown()) {
+                    gc.drawImage(WHITE_CROWN, piece.getX() * 64, piece.getY() * 64, 64, 64);
+                } else {
+                    gc.drawImage(WHITE_PIECE, piece.getX() * 64, piece.getY() * 64, 64, 64);
+                }
             } else {
-                gc.drawImage(BLACK_PIECE, piece.getX()*64, piece.getY()*64, 64, 64);
+                if (piece.isCrown()) {
+                    gc.drawImage(BLACK_CROWN, piece.getX()*64, piece.getY()*64, 64, 64);
+                } else {
+                    gc.drawImage(BLACK_PIECE, piece.getX()*64, piece.getY()*64, 64, 64);
+                }
             }
         }
     }
@@ -161,4 +188,6 @@ public class Main extends Application {
     private static final Image EAT = new Image("resources/eat.png");
     private static final Image WHITE_PIECE = new Image("resources/white_piece.png");
     private static final Image BLACK_PIECE = new Image("resources/black_piece.png");
+    private static final Image WHITE_CROWN = new Image("resources/white_crown.png");
+    private static final Image BLACK_CROWN = new Image("resources/black_crown.png");
 }
