@@ -140,18 +140,33 @@ public class Board {
 
         HashMap<Piece, List<List<String>>> moves = new HashMap<>();
         if (eat) {
+            int maxSize = 0;
+            HashMap<Piece, List<List<String>>> tempMoves = new HashMap<>();
             for (Piece piece : getPieces()) {
                 if (piece.getColor() == color && piece.canEat()) {
-                    System.out.println("Jump list" + piece.getJumpList());
-                    System.out.println("All Paths" + piece.getAllPaths(piece.getJumpList()));
-                    System.out.println("Longest Path" + piece.getLongestPath(piece.getAllPaths(piece.getJumpList())));
-                    moves.put(piece, piece.getLongestPath(piece.getAllPaths(piece.getJumpList())));
+                    System.out.println("Jump list" + piece.getJump());
+                    System.out.println("All Paths" + piece.getAllPaths(piece.getJump()));
+                    System.out.println("Longest Path" + piece.getLongestPath(piece.getAllPaths(piece.getJump())));
+                    List<List<String>> longestPath = piece.getLongestPath(piece.getAllPaths(piece.getJump()));
+
+                    if (maxSize < longestPath.get(0).size()) {
+                        maxSize = longestPath.get(0).size();
+                    }
+
+                    tempMoves.put(piece, longestPath);
+
+                }
+            }
+            /* keep only longest jump */
+            for (Piece piece : tempMoves.keySet()) {
+                if (tempMoves.get(piece).getFirst().size() == maxSize) {
+                    moves.put(piece, tempMoves.get(piece));
                 }
             }
         } else {
             for (Piece piece : getPieces()) {
-                if (piece.getColor() == color && !piece.getMoveList().isEmpty()) {
-                    moves.put(piece, piece.getMoveList());
+                if (piece.getColor() == color && !piece.getMove().isEmpty()) {
+                    moves.put(piece, piece.getMove());
                 }
             }
         }
