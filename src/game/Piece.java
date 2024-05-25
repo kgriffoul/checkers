@@ -94,7 +94,7 @@ public class Piece {
         if (   Board.isPieceAt(pieces, x + 1, y - 1) // there is a piece in diagonal
                 && Board.getPieceAt(pieces,x + 1, y - 1).getColor() != this.getColor() // the color is not the same
                 && !Board.isPieceAt(pieces, x + 2, y - 2) // there is an empty space after the piece
-                && x + 2 < 10 && y - 2 >= 1) // the coordinates are in the board
+                && x + 2 < 10 && y - 2 >= 0) // the coordinates are in the board
         {
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
 //            System.out.println(Arrays.toString(newPieces.toArray()));
@@ -118,7 +118,7 @@ public class Piece {
         if (   Board.isPieceAt(pieces, x - 1, y - 1)
                 && Board.getPieceAt(pieces, x - 1, y - 1).getColor() != this.getColor()
                 && !Board.isPieceAt(pieces, x - 2, y - 2)
-                && x - 2 >= 1 && y - 2 >= 1)
+                && x - 2 >= 0 && y - 2 >= 0)
         {
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
 //            System.out.println(Arrays.toString(newPieces.toArray()));
@@ -130,7 +130,7 @@ public class Piece {
         if (   Board.isPieceAt(pieces, x - 1, y + 1)
                 && Board.getPieceAt(pieces, x - 1, y + 1).getColor() != this.getColor()
                 && !Board.isPieceAt(pieces, x - 2, y + 2)
-                && x - 2 >= 1 && y + 2 < 10)
+                && x - 2 >= 0 && y + 2 < 10)
         {
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
 //            System.out.println(Arrays.toString(newPieces.toArray()));
@@ -242,7 +242,7 @@ public class Piece {
         return     board.isPieceAt(x + 1, y - 1) // there is a piece in diagonal
                 && board.getPieceAt(x + 1, y - 1).getColor() != this.getColor() // the color is not the same
                 && !board.isPieceAt(x + 2, y - 2) // there is an empty space after the piece
-                && x + 2 < 10 && y - 2 >= 1 // the coordinates are in the board
+                && x + 2 < 10 && y - 2 >= 0 // the coordinates are in the board
                 || board.isPieceAt(x + 1, y + 1)
                 && board.getPieceAt(x + 1, y + 1).getColor() != this.getColor()
                 && !board.isPieceAt(x + 2, y + 2)
@@ -250,11 +250,11 @@ public class Piece {
                 || board.isPieceAt(x - 1, y - 1)
                 && board.getPieceAt(x - 1, y - 1).getColor() != this.getColor()
                 && !board.isPieceAt(x - 2, y - 2)
-                && x - 2 >= 1 && y - 2 >= 1
+                && x - 2 >= 0 && y - 2 >= 0
                 || board.isPieceAt(x - 1, y + 1)
                 && board.getPieceAt(x - 1, y + 1).getColor() != this.getColor()
                 && !board.isPieceAt(x - 2, y + 2)
-                && x - 2 >= 1 && y + 2 < 10;
+                && x - 2 >= 0 && y + 2 < 10;
     }
 
     private static String positionToString(int x, int y) {
