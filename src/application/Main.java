@@ -35,11 +35,60 @@ public class Main extends Application {
         Board board = new Board(new Player("a"), new Player("b"));
 
         /* temp */
-        board.getPieceAt(0, 0).setPos(1, 5);
-        board.getPieceAt(2, 0).setPos(7, 5);
-        board.getPieceAt(7, 5).setCrown(true);
-        board.removePieceAt(3, 7);
-        board.removePieceAt(9, 7);
+//        board.removePieceAt(0, 0);
+//        board.removePieceAt(2, 0);
+//        board.removePieceAt(4, 0);
+//        board.removePieceAt(6, 0);
+//        board.removePieceAt(8, 0);
+//        board.removePieceAt(1, 1);
+//        board.removePieceAt(3, 1);
+//        board.removePieceAt(5, 1);
+//        board.removePieceAt(7, 1);
+//        board.removePieceAt(9, 1);
+//        board.removePieceAt(0, 2);
+//        board.removePieceAt(2, 2);
+//        board.removePieceAt(4, 2);
+//        board.removePieceAt(6, 2);
+//        board.removePieceAt(8, 2);
+//        board.removePieceAt(1, 3);
+//        board.removePieceAt(3, 3);
+//        board.removePieceAt(5, 3);
+//        board.removePieceAt(7, 3);
+//        board.removePieceAt(9, 3);
+//        
+//        board.removePieceAt(0, 6);
+//        board.removePieceAt(2, 6);
+//        board.removePieceAt(4, 6);
+//        board.removePieceAt(6, 6);
+//        board.removePieceAt(8, 6);
+//        board.removePieceAt(1, 7);
+//        board.removePieceAt(3, 7);
+//        board.removePieceAt(5, 7);
+//        board.removePieceAt(7, 7);
+//        board.removePieceAt(9, 7);
+//        board.removePieceAt(0, 8);
+//        board.removePieceAt(2, 8);
+//        board.removePieceAt(4, 8);
+//        board.removePieceAt(6, 8);
+//        board.removePieceAt(8, 8);
+//        board.removePieceAt(1, 9);
+//        board.removePieceAt(3, 9);
+//        board.removePieceAt(5, 9);
+//        board.removePieceAt(7, 9);
+//        board.removePieceAt(9, 9);
+        
+//        board.getPieceAt(0, 0).setPos(5, 5);
+//        board.getPieceAt(5, 5).setCrown(true);
+//        board.getPieceAt(9, 9).setPos(7, 7);
+//        board.getPieceAt(7, 9).setPos(6, 4);
+//        board.getPieceAt(5, 9).setPos(6, 2);
+//        board.getPieceAt(3, 9).setPos(4, 2);
+        
+
+//        board.getPieceAt(2, 0).setPos(7, 5);
+//        board.getPieceAt(7, 5).setCrown(true);
+//        board.removePieceAt(3, 7);
+//        board.removePieceAt(9, 7);
         /*      */
 
         drawBoard(gc, board);

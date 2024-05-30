@@ -182,17 +182,25 @@ public class Piece {
         }
 
     }
+    
 
     public HashMap getJumpListCrown() {
         HashMap map = new HashMap<>();
 //        System.out.println(Arrays.toString(board.getPieces().toArray()));
-        ArrayList<Piece> pieces = new ArrayList<>(this.board.getPieces()); // clone the original board
-        getJumpListCrown(pieces, this.getX(), this.getY(), map);
+//        ArrayList<Piece> pieces = new ArrayList<>(this.board.getPieces()); 
+        ArrayList<Piece> pieces = new ArrayList<>(); // clone the original board
+        for (Piece piece : board.getPieces()) {
+        	if (!piece.equals(this)) {
+        		pieces.add(piece);
+        	}
+        }
+        getJumpListCrown(pieces, this.getX(), this.getY(), map, null);
 //        System.out.println("Map: " + map);
         return map;
     }
 
-    private void getJumpListCrown(ArrayList<Piece> pieces, int x, int y, HashMap map) {
+    private void getJumpListCrown(ArrayList<Piece> pieces, int x, int y, HashMap map, Direction direction) {
+    	System.out.println(direction);
         int i;
 
         i = 1;
@@ -201,7 +209,8 @@ public class Piece {
         }
         if (   x + i + 1 < 10 && y - i - 1 >= 0     // on est toujours dans le plateau, même après le saut
             && Board.getPieceAt(pieces, x+i, y-i).getColor() != this.getColor()
-            && !Board.isPieceAt(pieces, x+i+1, y-i-1)    // il n'y a pas de pièce après
+            && !Board.isPieceAt(pieces, x+i+1, y-i-1) // il n'y a pas de pièce après
+            && direction != Direction.NW    
         ) {
 
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
@@ -212,7 +221,7 @@ public class Piece {
 
                 HashMap<String, HashMap> pos = new HashMap<>();
                 map.put(positionToString(x + i + j, y - i - j), pos);
-                getJumpListCrown(newPieces, x + i + j, y - i - j, pos);
+                getJumpListCrown(newPieces, x + i + j, y - i - j, pos, Direction.SE);
                 j++;
 
             }
@@ -225,7 +234,7 @@ public class Piece {
         }
         if (   x + i + 1 < 10 && y + i + 1 < 10
             && Board.getPieceAt(pieces, x+i, y+i).getColor() != this.getColor()
-            && !Board.isPieceAt(pieces, x+i+1, y+i+1)) {
+            && !Board.isPieceAt(pieces, x+i+1, y+i+1) && direction != Direction.SW) {
 
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
             Board.removePieceAt(newPieces, x + i, y + i);
@@ -235,7 +244,7 @@ public class Piece {
 
                 HashMap<String, HashMap> pos = new HashMap<>();
                 map.put(positionToString(x + i + j, y + i + j), pos);
-                getJumpListCrown(newPieces, x + i + j, y + i + j, pos);
+                getJumpListCrown(newPieces, x + i + j, y + i + j, pos, Direction.NE);
                 j++;
 
             }
@@ -248,7 +257,7 @@ public class Piece {
         }
         if (   x - i - 1 >= 0 && y - i - 1 >= 0
             && Board.getPieceAt(pieces, x-i, y-i).getColor() != this.getColor()
-            && !Board.isPieceAt(pieces, x-i-1, y-i-1)) {
+            && !Board.isPieceAt(pieces, x-i-1, y-i-1) && direction != Direction.NE) {
 
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
             Board.removePieceAt(newPieces, x - i, y - i);
@@ -258,7 +267,7 @@ public class Piece {
 
                 HashMap<String, HashMap> pos = new HashMap<>();
                 map.put(positionToString(x - i - j, y - i - j), pos);
-                getJumpListCrown(newPieces, x - i - j, y - i - j, pos);
+                getJumpListCrown(newPieces, x - i - j, y - i - j, pos, Direction.SW);
                 j++;
 
             }
@@ -271,7 +280,7 @@ public class Piece {
         }
         if (   x - i - 1 >= 0 && y + i + 1 < 10
             && Board.getPieceAt(pieces, x-i, y+i).getColor() != this.getColor()
-            && !Board.isPieceAt(pieces, x-i-1, y+i+1)) {
+            && !Board.isPieceAt(pieces, x-i-1, y+i+1) && direction != Direction.SE) {
 
             ArrayList<Piece> newPieces = new ArrayList<>(pieces);
             Board.removePieceAt(newPieces, x - i, y + i);
@@ -281,7 +290,7 @@ public class Piece {
 
                 HashMap<String, HashMap> pos = new HashMap<>();
                 map.put(positionToString(x - i - j, y + i + j), pos);
-                getJumpListCrown(newPieces, x - i - j, y + i + j, pos);
+                getJumpListCrown(newPieces, x - i - j, y + i + j, pos, Direction.NW);
                 j++;
 
             }
@@ -313,6 +322,7 @@ public class Piece {
     }
 
     public boolean canEatCrown() {
+    	boolean eat = false;
         for (int i = -1; i <= 1; i += 2) {
             for (int j = -1; j <= 1; j += 2) {
                 int newX = x + i;
@@ -321,10 +331,8 @@ public class Piece {
                     if (board.isPieceAt(newX, newY)) {
                         if (board.getPieceAt(newX, newY).getColor() != getColor()
                             && !board.isPieceAt(newX + i, newY + j)
-                            && newX + i >= 0 && newY + i < 10 && newY + j >= 0 && newY + j < 10) {
-                            return true;
-                        } else {
-                            return false;
+                            && newX + i >= 0 && newX + i < 10 && newY + j >= 0 && newY + j < 10) {
+                            eat = true;
                         }
                     }
                     newX += i;
@@ -332,7 +340,7 @@ public class Piece {
                 }
             }
         }
-        return false;
+        return eat;
     }
 
     private static String positionToString(int x, int y) {
