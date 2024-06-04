@@ -8,7 +8,7 @@ public class Piece {
     private int x;
     private int y;
     private boolean crown;
-    private final Board board;
+    private Board board;
 
     public Piece(Color color, int x, int y, Board board) {
         this.color = color;
@@ -18,16 +18,19 @@ public class Piece {
         this.board = board;
     }
 
-    public Piece(Color color, int x, int y, boolean crown, Board board) {
+    public Piece(Color color, int x, int y, boolean crown) {
         this.color = color;
         this.x = x;
         this.y = y;
         this.crown = crown;
-        this.board = board;
     }
 
     public Color getColor() {
         return color;
+    }
+    
+    public void setBoard(Board board) {
+    	this.board = board;
     }
 
     public int getX() {

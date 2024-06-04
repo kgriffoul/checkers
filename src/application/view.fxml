@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.text.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.canvas.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #F5F5F5;" stylesheets="@application.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.BoardController">
+   <center>
+      <Canvas fx:id="boardCanvas" height="640.0" width="640.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin>
+      </Canvas>
+   </center>
+   <left>
+      <VBox alignment="TOP_CENTER" prefHeight="700.0" prefWidth="200.0" spacing="20.0" style="-fx-background-color: #DCDCDC; -fx-background-radius: 25;" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="30.0" left="50.0" top="20.0" />
+         </BorderPane.margin>
+         <children>
+            <Button fx:id="settings" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" onAction="#openSettings" prefWidth="150.0">
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+            </Button>
+            <Button fx:id="rules" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" onAction="#displayRules" prefWidth="150.0" />
+            <Button fx:id="pause" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" prefWidth="150.0" />
+            <Button fx:id="load" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" onAction="#importGame" prefWidth="150.0" />
+            <Button fx:id="save" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" onAction="#saveGame" prefWidth="150.0" />
+            <Button fx:id="quit" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" onAction="#closeApp" prefWidth="150.0">
+               <VBox.margin>
+                  <Insets top="150.0" />
+               </VBox.margin>
+            </Button>
+         </children>
+      </VBox>
+   </left>
+   <right>
+      <VBox alignment="CENTER" prefHeight="650.0" prefWidth="200.0" spacing="10.0" style="-fx-background-color: #DCDCDC; -fx-background-radius: 25;" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets bottom="30.0" right="50.0" top="20.0" />
+         </BorderPane.margin>
+         <children>
+            <Label text="Player 1">
+               <VBox.margin>
+                  <Insets bottom="15.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Label text="⏱ 12:00">
+               <VBox.margin>
+                  <Insets bottom="15.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Button fx:id="forgive1" alignment="CENTER" minHeight="50.0" mnemonicParsing="false" prefWidth="150.0">
+               <VBox.margin>
+                  <Insets bottom="130.0" />
+               </VBox.margin>
+            </Button>
+            <Label text="Label">
+               <font>
+                  <Font size="16.0" />
+               </font></Label>
+            <Button fx:id="forgive2" alignment="CENTER" minHeight="50.0" mnemonicParsing="false" prefWidth="150.0">
+               <VBox.margin>
+                  <Insets top="130.0" />
+               </VBox.margin>
+            </Button>
+            <Label text="⏱ 12:00">
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Label text="Player 2">
+               <VBox.margin>
+                  <Insets top="15.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+   </right>
+   <top>
+      <VBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" style="-fx-background-color: #F5F5F5;" BorderPane.alignment="CENTER">
+         <children>
+            <Label text="⏱ 24:00">
+               <VBox.margin>
+                  <Insets top="20.0" />
+               </VBox.margin>
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="450.0">
+               <children>
+                  <Label text="Label">
+                     <font>
+                        <Font size="16.0" />
+                     </font></Label>
+                  <Label text="Label">
+                     <font>
+                        <Font size="16.0" />
+                     </font></Label>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </top>
+</BorderPane>

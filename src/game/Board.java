@@ -29,12 +29,15 @@ public class Board {
         this.move = Color.WHITE;
     }
 
-    public Board(List<Piece> pieces, Player player1, Player player2) {
+    public Board(List<Piece> pieces, Player player1, Player player2, Color move) {
         this.pieces = pieces;
+        for (Piece piece : this.pieces) {
+        	piece.setBoard(this);
+        }
         this.players = new HashMap<>();
         this.players.put(Color.WHITE, player1);
         this.players.put(Color.BLACK, player2);
-        this.move = Color.WHITE;
+        this.move = move;
     }
 
     public List<Piece> getPieces() {
@@ -47,6 +50,10 @@ public class Board {
 
     public Color getMove() {
         return move;
+    }
+    
+    public void setMove(Color turnColor) {
+    	this.move = turnColor;
     }
 
     public void switchMove() {
