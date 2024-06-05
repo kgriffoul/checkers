@@ -26,6 +26,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
@@ -34,7 +35,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -43,6 +46,14 @@ public class BoardController {
 
 	private GraphicsContext gc;
 	private Board board;
+	private boolean canPlay;
+	private boolean isPaused;
+	private boolean shouldSave;
+	
+	private int timerValue;
+	
+	@FXML
+    private BorderPane window;
 	
     @FXML
     private Canvas boardCanvas;
@@ -70,11 +81,31 @@ public class BoardController {
     
     @FXML
     private Button forgive2;
+    
+    @FXML
+    private Button play;
+    
+    @FXML
+    private Label turn;
+    
+    @FXML
+    private Label timer;
 	
 	@FXML
 	private void initialize() {
+		
 		loadImage("Classique");
 		loadBoard(boardCanvas);
+		
+		canPlay = false;
+		isPaused = false;
+		shouldSave = false;
+		
+		timerValue = 0;
+		
+		turn.setManaged(false);
+		
+		gc.drawImage(GRAY, 0, 0);
 
 //		settings.setCursor(Cursor.CLOSED_HAND);
 
@@ -84,6 +115,7 @@ public class BoardController {
         load.setGraphic(IMPORT);
         save.setGraphic(SAVE);
         quit.setGraphic(QUIT);
+        play.setGraphic(PLAY);
         
         forgive1.setGraphic(FORGIVE1);
         forgive2.setGraphic(FORGIVE2);
@@ -98,17 +130,44 @@ public class BoardController {
         rules.setOnMouseEntered(e -> rules.setGraphic(RULES_HOVER));
         rules.setOnMouseExited(e -> rules.setGraphic(RULES));
         
-        pause.setOnMouseEntered(e -> pause.setGraphic(PAUSE_HOVER));
-        pause.setOnMouseExited(e -> pause.setGraphic(PAUSE));
+        pause.setOnMouseEntered(e -> {
+        	if (isPaused) {
+        		pause.setGraphic(RESUME_HOVER);
+        	} else {
+        		pause.setGraphic(PAUSE_HOVER);
+        	}
+        });
+        pause.setOnMouseExited(e -> {
+	        if (isPaused) {
+	    		pause.setGraphic(RESUME);
+	    	} else {
+	    		pause.setGraphic(PAUSE);
+	    	}
+	    });
         
         load.setOnMouseEntered(e -> load.setGraphic(IMPORT_HOVER));
         load.setOnMouseExited(e -> load.setGraphic(IMPORT));
         
-        save.setOnMouseEntered(e -> save.setGraphic(SAVE_HOVER));
-        save.setOnMouseExited(e -> save.setGraphic(SAVE));
+        save.setOnMouseEntered(e -> {
+        	if (shouldSave) {
+        		save.setGraphic(SAVE_ITALIC_HOVER);
+        	} else {
+        		save.setGraphic(SAVE_HOVER);
+        	}
+        });
+        save.setOnMouseExited(e -> {
+	        if (shouldSave) {
+	        	save.setGraphic(SAVE_ITALIC);
+	    	} else {
+	    		save.setGraphic(SAVE);
+	    	}
+	    });
         
         quit.setOnMouseEntered(e -> quit.setGraphic(QUIT_HOVER));
         quit.setOnMouseExited(e -> quit.setGraphic(QUIT));
+        
+        play.setOnMouseEntered(e -> play.setGraphic(PLAY_HOVER));
+        play.setOnMouseExited(e -> play.setGraphic(PLAY));
         
         forgive1.setOnMouseEntered(e -> forgive1.setGraphic(FORGIVE_HOVER1));
         forgive1.setOnMouseExited(e -> forgive1.setGraphic(FORGIVE1));
@@ -150,7 +209,6 @@ public class BoardController {
 			.forEach(imageView -> imageView.setFitWidth(newValue.getWidth()));
 		});
 
-
 		Stage stage = new Stage();
 		stage.initModality(Modality.APPLICATION_MODAL);
 		stage.initStyle(StageStyle.DECORATED);
@@ -161,7 +219,6 @@ public class BoardController {
 
 		Scene scene = new Scene(scrollPane);
 		stage.setScene(scene);
-
 
 		stage.showAndWait();
 	}
@@ -178,10 +235,22 @@ public class BoardController {
 		vbox.setSpacing(10);
 		vbox.setPadding(new Insets(20, 20, 20, 20));
 		
+		HBox application = new HBox();
+		application.setAlignment(Pos.CENTER_LEFT);
+		
+		Label applicationLabel = new Label("Thème de l'application : ");
+		ComboBox<String> applicationList = new ComboBox<>();
+		applicationList.getItems().addAll("Clair", "Sombre");
+		applicationList.getSelectionModel().selectFirst();
+		application.getChildren().addAll(applicationLabel, applicationList);
+		applicationList.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+			   changeTheme(newValue);
+		});
+		
 		HBox theme = new HBox();
 		theme.setAlignment(Pos.CENTER_LEFT);
 		
-		Label themeLabel = new Label("Thème : ");
+		Label themeLabel = new Label("Thème du jeu : ");
 		ComboBox<String> themeList = new ComboBox<>();
 		themeList.getItems().addAll("Classique", "Biscuit", "Poker");
 		themeList.getSelectionModel().selectFirst();
@@ -190,7 +259,7 @@ public class BoardController {
 			   loadImage(newValue);
 		}); 
 		
-		vbox.getChildren().addAll(theme);
+		vbox.getChildren().addAll(application, theme);
 		
 		Scene scene = new Scene(vbox);
 		stage.setScene(scene);
@@ -199,7 +268,28 @@ public class BoardController {
     }
     
     @FXML
+    private void pauseGame(ActionEvent event) {
+    	if (isPaused) {
+    		pause.setGraphic(PAUSE_HOVER);
+    		isPaused = false;
+    		canPlay = true;
+    		drawBoard(gc, board);
+    		board.selectPiece(null);
+    	} else if (!isPaused && canPlay) {
+    		pause.setGraphic(RESUME_HOVER);
+    		isPaused = true;
+    		canPlay = false;
+    		drawBoard(gc, board);
+    		gc.drawImage(GRAY, 0, 0);
+    	}
+    }
+    
+    @FXML
     private void saveGame(ActionEvent event) {
+    	
+    	shouldSave = false;
+    	save.setGraphic(SAVE_HOVER);
+    	
 		String data;
 
 		data = String.valueOf(board.getMove()) + "\n"
@@ -219,7 +309,7 @@ public class BoardController {
 		        directory.mkdir();
 		    }
 		    
-			FileWriter writer = new FileWriter("data/" + System.currentTimeMillis() + ".dat");
+			FileWriter writer = new FileWriter("data/" + new SimpleDateFormat("yyyy-MM-dd_HHmmssSSSS").format(new Date()) + ".dat");
 
 			// write the string to the file
 			writer.write(data);
@@ -240,6 +330,14 @@ public class BoardController {
 		List<Piece> pieces = new ArrayList<>();
 
 		FileChooser chooser = new FileChooser();
+		
+		File directory = new File("data/");
+	    if (!directory.exists()){
+	        directory.mkdir();
+	    }
+	    
+		chooser.setInitialDirectory(directory);
+		
 		Stage stage = new Stage();
 		stage.setScene(null);
 		File selectedFile = chooser.showOpenDialog(stage);
@@ -256,17 +354,15 @@ public class BoardController {
 				// une fonction à essayer pouvant générer une erreur
 				String informations = reader.readLine();
 	
-	
+				int index = 0;
 				while (informations != null) {
-	
+					
 					// affichage de la ligne
 					System.out.println(informations);
 					if (informations.equals("WHITE")) {
 						playerTurn = Color.WHITE;
-						System.out.println("C'est au blanc !");
 					} else if (informations.equals("BLACK")) {
 						playerTurn = Color.BLACK;
-						System.out.println("C'est au noir !");
 					}
 	
 					if (informations.contains(",WHITE")) {
@@ -274,33 +370,28 @@ public class BoardController {
 					} else if (informations.contains(",BLACK")) {
 						player2 = new Player(informations.substring(0, informations.indexOf(',')));
 					}
-	
-					if (informations.contains("WHITE,")) {
-	
-						int x;
-						int y;
-						boolean crown;
-						x = Integer.valueOf(informations.substring(informations.indexOf("WHITE,") + 6, informations.indexOf("WHITE,") + 7));
-						y = Integer.valueOf(informations.substring(informations.indexOf("WHITE,") + 8, informations.indexOf("WHITE,") + 9));
-						crown = Boolean.valueOf(informations.substring(informations.indexOf("WHITE,") + 10, informations.indexOf('e')));
-						Piece piece = new Piece(Color.WHITE, x, y,crown);
-						pieces.add(piece);
-	
-					} else if (informations.contains("BLACK,")) {
-	
-						int x;
-						int y;
-						boolean crown;
-
-						x = Integer.valueOf(informations.substring(informations.indexOf("BLACK,") + 6, informations.indexOf("BLACK,") + 7));
-						y = Integer.valueOf(informations.substring(informations.indexOf("BLACK,") + 8, informations.indexOf("BLACK,") + 9));
-						crown = Boolean.valueOf(informations.substring(informations.indexOf("BLACK,") + 10, informations.indexOf('e')));
-						Piece piece = new Piece(Color.BLACK, x, y,crown);
-						pieces.add(piece);
-	
+					
+					if (index > 2) {
+						String[] parts = informations.split(",");
+						
+						int x = Integer.valueOf(parts[1]);
+						int y = Integer.valueOf(parts[2]);
+						boolean crown = Boolean.valueOf(parts[3]);
+						
+						if (parts[0].equals("WHITE")) {
+							Piece piece = new Piece(Color.WHITE, x, y,crown);
+							pieces.add(piece);
+		
+						} else if (parts[0].equals("BLACK")) {
+							Piece piece = new Piece(Color.BLACK, x, y,crown);
+							pieces.add(piece);
+		
+						}
 					}
 					// lecture de la prochaine ligne
 					informations = reader.readLine();
+					
+					index++;
 				}
 				reader.close();
 			} catch (IOException e) {
@@ -308,32 +399,101 @@ public class BoardController {
 			}
 			board = new Board(pieces, player1, player2, playerTurn);
 			
+			play.setManaged(false);
+			play.setVisible(false);
+			turn.setManaged(true);
+			turn.setVisible(true);
+			turn.setText("Tour des " + (board.getMove() == Color.WHITE ? "blancs" : "noirs"));
+			canPlay = true;
+			
 			/* reload canvas */
-	    	if (gc != null) {
-	    		drawBoard(gc, board);
-	    	}
+	    	drawBoard(gc, board);
 		}
     }
     
     @FXML
     private void closeApp(ActionEvent event) {
     	Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+    	((Stage) confirmation.getDialogPane().getScene().getWindow()).getIcons().add(BLACK_PIECE);
 		confirmation.setTitle("Confirmation");
-		confirmation.setHeaderText("Êtes-vous sûr de vouloir quitter ?");
+		confirmation.setHeaderText("Êtes-vous sûr de vouloir quitter ?\n(La partie en cours ne sera pas sauvegardée)");
 		ButtonType okButton = new ButtonType("Oui", ButtonData.OK_DONE);
 
 		ButtonType cancelButton = new ButtonType("Non", ButtonData.CANCEL_CLOSE);
 
-
 		confirmation.getButtonTypes().setAll(cancelButton, okButton);
-
 
 		confirmation.showAndWait().ifPresent(response -> {
 			if (response == okButton) {
-
 				Platform.exit();
 			}
 		});
+    }
+    
+    @FXML
+    private void startGame(ActionEvent event) {
+    	/* reset board */
+    	board = new Board(new Player("1"), new Player("2"));
+
+    	canPlay = true;
+    	drawBoard(gc, board);
+    	play.setManaged(false);
+    	play.setVisible(false);
+    	turn.setManaged(true);
+    	turn.setVisible(true);
+    	turn.setText("Tour des blancs");
+    }
+    
+    @FXML
+    private void forgiveBlack(ActionEvent event) {
+    	if (canPlay && board.getMove() == Color.BLACK) {
+    		Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        	((Stage) confirmation.getDialogPane().getScene().getWindow()).getIcons().add(BLACK_PIECE);
+    		confirmation.setTitle("Confirmation");
+    		confirmation.setHeaderText("Êtes-vous sûr de vouloir abandonner ?");
+    		ButtonType okButton = new ButtonType("Oui", ButtonData.OK_DONE);
+
+    		ButtonType cancelButton = new ButtonType("Non", ButtonData.CANCEL_CLOSE);
+
+    		confirmation.getButtonTypes().setAll(cancelButton, okButton);
+
+    		confirmation.showAndWait().ifPresent(response -> {
+    			if (response == okButton) {
+                	play.setManaged(true);
+                	play.setVisible(true);
+                	turn.setManaged(false);
+                	turn.setVisible(false);
+                	gc.drawImage(GRAY, 0, 0);
+            		canPlay = false;
+                }
+    		});
+    	}
+    }
+    
+    @FXML
+    private void forgiveWhite(ActionEvent event) {
+    	if (canPlay && board.getMove() == Color.WHITE) {
+    		Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        	((Stage) confirmation.getDialogPane().getScene().getWindow()).getIcons().add(BLACK_PIECE);
+    		confirmation.setTitle("Confirmation");
+    		confirmation.setHeaderText("Êtes-vous sûr de vouloir abandonner ?");
+    		ButtonType okButton = new ButtonType("Oui", ButtonData.OK_DONE);
+
+    		ButtonType cancelButton = new ButtonType("Non", ButtonData.CANCEL_CLOSE);
+
+    		confirmation.getButtonTypes().setAll(cancelButton, okButton);
+
+    		confirmation.showAndWait().ifPresent(response -> {
+    			if (response == okButton) {
+                	play.setManaged(true);
+                	play.setVisible(true);
+                	turn.setManaged(false);
+                	turn.setVisible(false);
+                	gc.drawImage(GRAY, 0, 0);
+            		canPlay = false;
+                }
+    		});
+    	}
     }
 
     public void loadBoard(Canvas canvas) {
@@ -418,7 +578,7 @@ public class BoardController {
             System.out.println("Coups possibles:" + allowedMoves);
 
             /* si on sélectionne une pièce */
-            if (board.isPieceAt(x, y) && allowedMoves.containsKey(board.getPieceAt(x, y))) {
+            if (canPlay && board.isPieceAt(x, y) && allowedMoves.containsKey(board.getPieceAt(x, y))) {
                 gc.clearRect(0, 0, 640, 640);
                 drawBoard(gc, board);
                 board.selectPiece(board.getPieceAt(x, y));
@@ -456,7 +616,12 @@ public class BoardController {
                     String pos = list.getLast();
                     gc.drawImage(AVAILABLE, Integer.valueOf(pos.split(",")[0])*64, Integer.valueOf(pos.split(",")[1])*64);
                 }
-            } else if (!board.isPieceAt(x, y) && board.getSelectedPiece() != null) { // si clic sur case vide & pièce sélectionnée = on veut se déplacer
+            } else if (canPlay && board.isPieceAt(x, y) && !allowedMoves.containsKey(board.getPieceAt(x, y))) { // si clic sur pièce injouable
+            	gc.clearRect(0, 0, 640, 640);
+                drawBoard(gc, board);
+            	gc.drawImage(UNALLOWED, x*64,y*64);
+            	board.selectPiece(null);
+            } else if (canPlay && !board.isPieceAt(x, y) && board.getSelectedPiece() != null) { // si clic sur case vide & pièce sélectionnée = on veut se déplacer
                 /* on vérifie si la case sélectionnée est une case disponible */
                 boolean canMove = false;
                 for (List<String> list : allowedMoves.get(board.getSelectedPiece())) {
@@ -465,10 +630,12 @@ public class BoardController {
                         /* case disponible, on se déplace */
                         canMove = true;
                         board.move(board.getSelectedPiece(), list);
+                        shouldSave = true;
+                        save.setGraphic(SAVE_ITALIC);
 
                         /* check for crown */
-                        if (   board.getSelectedPiece().getColor() == game.Color.WHITE && board.getSelectedPiece().getY() == 9
-                            || board.getSelectedPiece().getColor() == game.Color.BLACK && board.getSelectedPiece().getY() == 0) {
+                        if (   board.getSelectedPiece().getColor() == Color.WHITE && board.getSelectedPiece().getY() == 9
+                            || board.getSelectedPiece().getColor() == Color.BLACK && board.getSelectedPiece().getY() == 0) {
                             board.getSelectedPiece().setCrown(true);
                         }
 
@@ -480,6 +647,39 @@ public class BoardController {
 
                         /* à l'autre joueur de jouer */
                         board.switchMove();
+                        turn.setText("Tour des " + (board.getMove() == Color.WHITE ? "blancs" : "noirs"));
+                        
+                        /* on vérifie si un joueur a gagné */
+                        boolean white = false;
+                        boolean black = false;
+                        for (Piece piece : board.getPieces()) {
+                        	if (piece.getColor() == Color.WHITE) {
+                        		white = true;
+                        	} else if (piece.getColor() == Color.BLACK) {
+                        		black = true;
+                        	}
+                        }
+                        
+                        Alert confirmation = new Alert(Alert.AlertType.INFORMATION);
+                        ((Stage) confirmation.getDialogPane().getScene().getWindow()).getIcons().add(BLACK_PIECE);
+                        confirmation.setTitle("Victoire !");
+                        if (!black) {
+                    		confirmation.setHeaderText("Les blancs ont gagné !");
+                    		
+                        } else if (!white) {
+                        	confirmation.setHeaderText("Les noirs ont gagné !");
+                        }
+                        
+                        if (!black || !white) {
+                        	confirmation.show();
+                        	
+                        	play.setManaged(true);
+                        	play.setVisible(true);
+                        	turn.setManaged(false);
+                        	turn.setVisible(false);
+                        	gc.drawImage(GRAY, 0, 0);
+                    		canPlay = false;
+                        }
                     }
                 }
             }
@@ -492,7 +692,7 @@ public class BoardController {
     public static void drawBoard(GraphicsContext gc, Board board) {
         gc.drawImage(BOARD, 0, 0, 640, 640);
         for (Piece piece : board.getPieces()) {
-            if (piece.getColor() == game.Color.WHITE) {
+            if (piece.getColor() == Color.WHITE) {
                 if (piece.isCrown()) {
                     gc.drawImage(WHITE_CROWN, piece.getX() * 64, piece.getY() * 64, 64, 64);
                 } else {
@@ -506,6 +706,18 @@ public class BoardController {
                 }
             }
         }
+    }
+    
+    private void changeTheme(String theme) {
+    	
+    	switch (theme) {
+    		case "Clair" -> {
+    			window.setStyle("-fx-background-color :  #F5F5F5;");
+    		}
+    		case "Sombre" -> {
+    			window.setStyle("-fx-background-color :  #696969;");
+    		}
+    	}
     }
     
     
@@ -531,9 +743,11 @@ public class BoardController {
     	}
     }
     
+    private static Image GRAY = new Image("resources/gray.png");
     private static Image SELECT = new Image("resources/select.png");
     private static Image AVAILABLE = new Image("resources/available.png");
     private static Image EAT = new Image("resources/eat.png");
+    private static Image UNALLOWED = new Image("resources/unallowed.png");
 
     private static Image BOARD;
 
@@ -548,12 +762,18 @@ public class BoardController {
     private static final ImageView RULES_HOVER = new ImageView(new Image("resources/buttons/rules_hover.png", 150, 50, true, true));
     private static final ImageView PAUSE = new ImageView(new Image("resources/buttons/pause.png", 150, 50, true, true));
     private static final ImageView PAUSE_HOVER = new ImageView(new Image("resources/buttons/pause_hover.png", 150, 50, true, true));
+    private static final ImageView RESUME = new ImageView(new Image("resources/buttons/resume.png", 150, 50, true, true));
+    private static final ImageView RESUME_HOVER = new ImageView(new Image("resources/buttons/resume_hover.png", 150, 50, true, true));
     private static final ImageView IMPORT = new ImageView(new Image("resources/buttons/import.png", 150, 50, true, true));
     private static final ImageView IMPORT_HOVER = new ImageView(new Image("resources/buttons/import_hover.png", 150, 50, true, true));
     private static final ImageView SAVE = new ImageView(new Image("resources/buttons/save.png", 150, 50, true, true));
     private static final ImageView SAVE_HOVER = new ImageView(new Image("resources/buttons/save_hover.png", 150, 50, true, true));
+    private static final ImageView SAVE_ITALIC = new ImageView(new Image("resources/buttons/save_italic.png", 150, 50, true, true));
+    private static final ImageView SAVE_ITALIC_HOVER = new ImageView(new Image("resources/buttons/save_italic_hover.png", 150, 50, true, true));
     private static final ImageView QUIT = new ImageView(new Image("resources/buttons/quit.png", 150, 50, true, true));
     private static final ImageView QUIT_HOVER = new ImageView(new Image("resources/buttons/quit_hover.png", 150, 50, true, true));
+    private static final ImageView PLAY = new ImageView(new Image("resources/buttons/play.png", 150, 50, true, true));
+    private static final ImageView PLAY_HOVER = new ImageView(new Image("resources/buttons/play_hover.png", 150, 50, true, true));
     private static final ImageView FORGIVE1 = new ImageView(new Image("resources/buttons/forgive.png", 150, 50, true, true));
     private static final ImageView FORGIVE_HOVER1 = new ImageView(new Image("resources/buttons/forgive_hover.png", 150, 50, true, true));
     private static final ImageView FORGIVE2 = new ImageView(new Image("resources/buttons/forgive.png", 150, 50, true, true));
