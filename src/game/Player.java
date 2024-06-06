@@ -3,16 +3,9 @@ package game;
 public class Player {
 
     private String username;
-    private int timer;
 
     public Player(String username) {
         this.username = username;
-        this.timer = 0;
-    }
-
-    public Player(String username, int timer) {
-        this.username = username;
-        this.timer = timer;
     }
 
     public String getUsername() {
@@ -23,11 +16,9 @@ public class Player {
         this.username = username;
     }
 
-    public int getTimer() {
-        return timer;
-    }
-
-    public void increaseTimer() {
-        this.timer++;
-    }
+	@Override
+	public String toString() {
+		return username;
+	}
+   
 }

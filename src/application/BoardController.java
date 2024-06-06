@@ -21,6 +21,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar.ButtonData;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -50,6 +51,7 @@ public class BoardController {
 	private boolean canPlay;
 	private boolean isPaused;
 	private boolean shouldSave;
+	private boolean showMoves;
 	
 	@FXML
 	private Label whitePlayer;
@@ -111,6 +113,8 @@ public class BoardController {
 		canPlay = false;
 		isPaused = false;
 		shouldSave = false;
+		
+		showMoves = true;
 		
 		whitePlayer.setManaged(false);
 		blackPlayer.setManaged(false);
@@ -271,7 +275,18 @@ public class BoardController {
 			   loadImage(newValue);
 		}); 
 		
-		vbox.getChildren().addAll(application, theme);
+		HBox moves = new HBox();
+		moves.setAlignment(Pos.CENTER_LEFT);
+		
+		Label movesLabel = new Label("Aide aux coups :  ");
+		CheckBox movesCheckbox = new CheckBox();
+		movesCheckbox.setSelected(showMoves);
+		movesCheckbox.selectedProperty().addListener((options, oldValue, newValue) -> {
+			   showMoves = newValue;
+		});
+		moves.getChildren().addAll(movesLabel, movesCheckbox);
+	
+		vbox.getChildren().addAll(application, theme, moves);
 		
 		Scene scene = new Scene(vbox);
 		stage.setScene(scene);
@@ -410,6 +425,19 @@ public class BoardController {
 				e.printStackTrace();
 			}
 			board = new Board(pieces, player1, player2, playerTurn);
+			
+			whitePlayerPrompt.setManaged(false);
+			whitePlayerPrompt.setVisible(false);
+			blackPlayerPrompt.setManaged(false);
+			blackPlayerPrompt.setVisible(false);
+			
+			whitePlayer.setText(player1.getUsername());
+			blackPlayer.setText(player2.getUsername());
+			
+			whitePlayer.setManaged(true);
+			whitePlayer.setVisible(true);
+			blackPlayer.setManaged(true);
+			blackPlayer.setVisible(true);
 			
 			play.setManaged(false);
 			play.setVisible(false);
@@ -614,35 +642,36 @@ public class BoardController {
 
                 /* affichage coups possibles */
                 System.out.println("Coups possibles pour cette pièce :" + allowedMoves.get(board.getSelectedPiece()));
-                for (List<String> list : allowedMoves.get(board.getSelectedPiece())) {
-                    for (String pos : Board.getDiagonalPos(
-                            board.getSelectedPiece().getX(),
-                            board.getSelectedPiece().getY(),
-                            Integer.parseInt(list.getFirst().split(",")[0]),
-                            Integer.parseInt(list.getFirst().split(",")[1]))) {
-                        int newX = Integer.parseInt(pos.split(",")[0]);
-                        int newY = Integer.parseInt(pos.split(",")[1]);
-                        if (board.isPieceAt(newX, newY) && board.getPieceAt(newX, newY).getColor() != board.getSelectedPiece().getColor()) {
-                            gc.drawImage(EAT, newX * 64, newY * 64, 64, 64);
-                        }
-
-                    }
-                    for (int i = 1; i < list.size(); i++) {
-                        int x1 = Integer.parseInt(list.get(i-1).split(",")[0]);
-                        int y1 = Integer.parseInt(list.get(i-1).split(",")[1]);
-                        int x2 = Integer.parseInt(list.get(i).split(",")[0]);
-                        int y2 = Integer.parseInt(list.get(i).split(",")[1]);
-                        for (String pos : Board.getDiagonalPos(x1, y1, x2, y2)) {
-                            int newX = Integer.parseInt(pos.split(",")[0]);
-                            int newY = Integer.parseInt(pos.split(",")[1]);
-                            if (board.isPieceAt(newX, newY) && board.getPieceAt(newX, newY).getColor() != board.getSelectedPiece().getColor()) {
-                                //System.out.println(newX +","+ newY);
-                                gc.drawImage(EAT, newX * 64, newY * 64, 64, 64);
-                            }
-                        }
-                    }
-                    String pos = list.getLast();
-                    gc.drawImage(AVAILABLE, Integer.valueOf(pos.split(",")[0])*64, Integer.valueOf(pos.split(",")[1])*64);
+                if (showMoves) {
+	                for (List<String> list : allowedMoves.get(board.getSelectedPiece())) {
+	                    for (String pos : Board.getDiagonalPos(
+	                            board.getSelectedPiece().getX(),
+	                            board.getSelectedPiece().getY(),
+	                            Integer.parseInt(list.getFirst().split(",")[0]),
+	                            Integer.parseInt(list.getFirst().split(",")[1]))) {
+	                        int newX = Integer.parseInt(pos.split(",")[0]);
+	                        int newY = Integer.parseInt(pos.split(",")[1]);
+	                        if (board.isPieceAt(newX, newY) && board.getPieceAt(newX, newY).getColor() != board.getSelectedPiece().getColor()) {
+	                            gc.drawImage(EAT, newX * 64, newY * 64, 64, 64);
+	                        }
+	
+	                    }
+	                    for (int i = 1; i < list.size(); i++) {
+	                        int x1 = Integer.parseInt(list.get(i-1).split(",")[0]);
+	                        int y1 = Integer.parseInt(list.get(i-1).split(",")[1]);
+	                        int x2 = Integer.parseInt(list.get(i).split(",")[0]);
+	                        int y2 = Integer.parseInt(list.get(i).split(",")[1]);
+	                        for (String pos : Board.getDiagonalPos(x1, y1, x2, y2)) {
+	                            int newX = Integer.parseInt(pos.split(",")[0]);
+	                            int newY = Integer.parseInt(pos.split(",")[1]);
+	                            if (board.isPieceAt(newX, newY) && board.getPieceAt(newX, newY).getColor() != board.getSelectedPiece().getColor()) {
+	                                gc.drawImage(EAT, newX * 64, newY * 64, 64, 64);
+	                            }
+	                        }
+	                    }
+	                    String pos = list.getLast();
+	                    gc.drawImage(AVAILABLE, Integer.valueOf(pos.split(",")[0])*64, Integer.valueOf(pos.split(",")[1])*64);
+	                }
                 }
             } else if (canPlay && board.isPieceAt(x, y) && !allowedMoves.containsKey(board.getPieceAt(x, y))) { // si clic sur pièce injouable
             	gc.clearRect(0, 0, 640, 640);
@@ -712,6 +741,11 @@ public class BoardController {
                         }
                     }
                 }
+                
+                /* la case n'est pas disponible */
+                if (!canMove) {
+                	gc.drawImage(UNALLOWED, x*64,y*64);
+                }
             }
 
         });
@@ -770,6 +804,9 @@ public class BoardController {
     	/* reload canvas */
     	if (gc != null) {
     		drawBoard(gc, board);
+    		if (!canPlay) {
+    			gc.drawImage(GRAY, 0, 0);
+    		}
     	}
     }
     
