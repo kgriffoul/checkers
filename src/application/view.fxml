@@ -8,7 +8,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane fx:id="window" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" style="-fx-background-color: #F5F5F5;" stylesheets="@application.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.BoardController">
+<BorderPane fx:id="window" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="1200.0" style="-fx-background-color: #F5F5F5;" stylesheets="@application.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.BoardController">
    <center>
       <Canvas fx:id="boardCanvas" height="640.0" width="640.0" BorderPane.alignment="CENTER">
          <BorderPane.margin>
@@ -33,7 +33,7 @@
             <Button fx:id="save" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" onAction="#saveGame" prefWidth="150.0" />
             <Button fx:id="quit" alignment="TOP_LEFT" minHeight="50.0" mnemonicParsing="false" onAction="#closeApp" prefWidth="150.0">
                <VBox.margin>
-                  <Insets top="150.0" />
+                  <Insets top="200.0" />
                </VBox.margin>
             </Button>
          </children>
@@ -45,22 +45,20 @@
             <Insets bottom="30.0" right="50.0" top="20.0" />
          </BorderPane.margin>
          <children>
-            <Label text="Joueur Noir">
-               <VBox.margin>
-                  <Insets bottom="15.0" />
-               </VBox.margin>
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
-            <Label text="⏱ 12:00">
-               <VBox.margin>
-                  <Insets bottom="15.0" />
-               </VBox.margin>
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+               <children>
+                  <Label fx:id="blackPlayer" text="Joueur Noir">
+                     <font>
+                        <Font name="Consolas" size="16.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="blackPlayerPrompt" text="Joueur Noir">
+                     <font>
+                        <Font name="Consolas" size="16.0" />
+                     </font>
+                  </TextField>
+               </children>
+            </HBox>
             <Button fx:id="forgive1" alignment="CENTER" minHeight="50.0" mnemonicParsing="false" onAction="#forgiveBlack" prefWidth="150.0">
                <VBox.margin>
                   <Insets bottom="100.0" />
@@ -81,49 +79,21 @@
                   <Insets top="100.0" />
                </VBox.margin>
             </Button>
-            <Label text="⏱ 12:00">
-               <VBox.margin>
-                  <Insets top="15.0" />
-               </VBox.margin>
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
-            <Label text="Joueur Blanc">
-               <VBox.margin>
-                  <Insets top="15.0" />
-               </VBox.margin>
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
-         </children>
-      </VBox>
-   </right>
-   <top>
-      <VBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
-         <children>
-            <Label fx:id="timer" text="⏱ 24:00">
-               <VBox.margin>
-                  <Insets top="20.0" />
-               </VBox.margin>
-               <font>
-                  <Font size="16.0" />
-               </font>
-            </Label>
-            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="450.0">
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label text="Label">
+                  <Label fx:id="whitePlayer" text="Joueur Blanc">
                      <font>
-                        <Font size="16.0" />
-                     </font></Label>
-                  <Label text="Label">
+                        <Font name="Consolas" size="16.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="whitePlayerPrompt" text="Joueur Blanc">
                      <font>
-                        <Font size="16.0" />
-                     </font></Label>
+                        <Font name="Consolas" size="16.0" />
+                     </font>
+                  </TextField>
                </children>
             </HBox>
          </children>
       </VBox>
-   </top>
+   </right>
 </BorderPane>

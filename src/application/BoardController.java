@@ -24,6 +24,7 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -50,7 +51,17 @@ public class BoardController {
 	private boolean isPaused;
 	private boolean shouldSave;
 	
-	private int timerValue;
+	@FXML
+	private Label whitePlayer;
+	
+	@FXML
+    private TextField whitePlayerPrompt;
+	
+	@FXML
+	private Label blackPlayer;
+	
+	@FXML
+    private TextField blackPlayerPrompt;
 	
 	@FXML
     private BorderPane window;
@@ -101,7 +112,8 @@ public class BoardController {
 		isPaused = false;
 		shouldSave = false;
 		
-		timerValue = 0;
+		whitePlayer.setManaged(false);
+		blackPlayer.setManaged(false);
 		
 		turn.setManaged(false);
 		
@@ -433,7 +445,19 @@ public class BoardController {
     @FXML
     private void startGame(ActionEvent event) {
     	/* reset board */
-    	board = new Board(new Player("1"), new Player("2"));
+    	board = new Board(new Player(whitePlayerPrompt.getText()), new Player(blackPlayerPrompt.getText()));
+    	whitePlayer.setText(whitePlayerPrompt.getText());
+    	blackPlayer.setText(blackPlayerPrompt.getText());
+    	
+    	whitePlayerPrompt.setManaged(false);
+    	blackPlayerPrompt.setManaged(false);
+    	whitePlayerPrompt.setVisible(false);
+    	blackPlayerPrompt.setVisible(false);
+    	
+    	whitePlayer.setManaged(true);
+    	whitePlayer.setVisible(true);
+    	blackPlayer.setManaged(true);
+    	blackPlayer.setVisible(true);
 
     	canPlay = true;
     	drawBoard(gc, board);
@@ -465,6 +489,8 @@ public class BoardController {
                 	turn.setVisible(false);
                 	gc.drawImage(GRAY, 0, 0);
             		canPlay = false;
+            		
+            		changePlayerNames();
                 }
     		});
     	}
@@ -491,6 +517,8 @@ public class BoardController {
                 	turn.setVisible(false);
                 	gc.drawImage(GRAY, 0, 0);
             		canPlay = false;
+            		
+            		changePlayerNames();
                 }
     		});
     	}
@@ -679,6 +707,8 @@ public class BoardController {
                         	turn.setVisible(false);
                         	gc.drawImage(GRAY, 0, 0);
                     		canPlay = false;
+                    		
+                    		changePlayerNames();
                         }
                     }
                 }
@@ -741,6 +771,18 @@ public class BoardController {
     	if (gc != null) {
     		drawBoard(gc, board);
     	}
+    }
+    
+    private void changePlayerNames() {
+    	whitePlayerPrompt.setManaged(true);
+    	blackPlayerPrompt.setManaged(true);
+    	whitePlayerPrompt.setVisible(true);
+    	blackPlayerPrompt.setVisible(true);
+    	
+    	whitePlayer.setManaged(false);
+    	whitePlayer.setVisible(false);
+    	blackPlayer.setManaged(false);
+    	blackPlayer.setVisible(false);
     }
     
     private static Image GRAY = new Image("resources/gray.png");
