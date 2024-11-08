@@ -1,7 +1,7 @@
 <h1>Description du projet</h1>
 <h2>Objectifs du projet :</h2> 
 
-<p>Durant ce projet, nous devions réaliser un jeu de dame avec IHM/p>
+<p>Durant ce projet, nous devions réaliser un jeu de dame avec IHM </p>
 
 <h2>Contributeurs de cette SAÉ :</h2>
   <table border="1">
